@@ -1,33 +1,29 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import { getCurrentDate } from "./helpers/dateManipulation";
+import { useEffect, useRef } from "react";
+import { AddTask } from "./components/AddTask";
+import { Header } from "./components/Header";
+import { ItemTask } from "./components/ItemTask";
 import { useTasks } from "./reducers/useTasks";
 
+import * as C from './stylesApp'
+
 const App = () => {
-  const [task, setTask] = useState('')
   const [list, dispatch] = useTasks()
-  const date = getCurrentDate()
 
-  const handleTaskChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTask(e.target.value)
-  }
-
-  useEffect(() => {
-    dispatch({
-      type: 'ORDER'
-    })
-  }, [list])
-  const handleAddTask = () => {
+  const handleAddTask = (task: string) => {
     if (task) {
       dispatch({
-        type: 'ADD',
-        payload: {
+      type: 'ADD',
+      payload: {
           task
-        }
+      }
       })
-      setTask('')
+
+      dispatch({
+        type: 'ORDER'
+      })
     }
   }
-
+  
   const handleDelTask = (id: string) => {
     dispatch({
       type: 'DEL',
@@ -35,8 +31,9 @@ const App = () => {
         id
       }
     })
-  }
 
+  }
+  
   const handleCompleteTask = (id: string, complete: boolean) => {
     dispatch({
       type: "COMPLETE",
@@ -45,44 +42,25 @@ const App = () => {
         complete
       }
     })
+
+    dispatch({
+      type: 'ORDER'
+    })
   }
-  
+
   return (
-    <div>
-      <p>{date}</p>
-      adicionar na lista
-      <input
-        type="text"
-        placeholder="Tarefa..."
-        value={task}
-        onChange={handleTaskChange}
-      />
-      <button onClick={handleAddTask}>Adicionar</button>
+    <C.Container>
+      <Header />
       
-      <hr />
+      <AddTask clickFn={handleAddTask} />
 
-      <ul>
+      <C.List>
+        <C.ListTitle>Tarefas de hoje</C.ListTitle>
         {list.map((item, index) => (
-          <li key={index}>
-            {!item.complete &&
-              // <input type="checkbox"  />
-              <div onClick={() => handleCompleteTask(item.id, item.complete)}>
-                [ ]
-              </div>
-            }
-            {item.complete &&
-              <div onClick={() => handleCompleteTask(item.id, item.complete)}>
-                [x]
-              </div>
-
-              // <input type="checkbox" checked onChange={() => handleCompleteTask(item.id, item.complete)} />
-            }
-            {item.task}
-            <button onClick={() => handleDelTask(item.id)}>Apagar</button>
-          </li>
+          <ItemTask key={index} item={item} clickDel={handleDelTask} clickComplete={handleCompleteTask} />
         ))}
-      </ul>
-    </div>
+      </C.List>
+    </C.Container>
   );
 }
 
